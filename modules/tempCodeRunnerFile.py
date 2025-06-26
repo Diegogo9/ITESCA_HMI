@@ -1,1 +1,0 @@
-print('Codigo escrito por: Diego Ramos - 20130235.')
