@@ -180,11 +180,11 @@ class HMIApp(Tk):
             self.buttons_off[i]["state"] = DISABLED
         self._enviar_estado()
 
-    def _crear_paneles_analogicos(self, paneles_info: dict):
+    def _crear_paneles_analogicos(self, paneles_info: dict[str, tuple[int, int]]):
         """
         Crea múltiples paneles analógicos de forma homogénea.
 
-        :param paneles_info: Diccionario con clave = nombre panel, valor = (x, y)
+        :param paneles_info: Diccionario con clave = nombre panel, valor = [x, y]
         """
         for nombre, (x, y) in paneles_info.items():
             panel = Label(self,

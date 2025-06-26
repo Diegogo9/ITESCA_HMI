@@ -92,7 +92,6 @@ class serialObject:
         return True
     
     # MARK: Recibir datos.
-
     #def recibe_data(self) -> Union[Dict[str, Union[bool, int]], str]:
     def recibe_data(self) -> dict[str, bool | int] | str:
         """ 
