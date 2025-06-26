@@ -32,9 +32,13 @@ class serialObject:
     def __init__(self, com_port: str, baudrate: int, timeout= 1.0, retries= 3):
         """
         Inicializa el objtero tipo serialObject.
+
         :param com_port: Puerto serial al cual se conectara la computadora.
         :param baudrate: Baudios especificos del controlador.
+        :param timeout: desconexion despues de este tiempo sin respuesta.
+        :param retries: reintenstos en caso de que la conexion falle.
         """
+
         self.com_port       = com_port
         self.baudrate       = baudrate
         self.timeout        = timeout

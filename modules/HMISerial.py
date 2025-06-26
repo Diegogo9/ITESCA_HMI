@@ -7,7 +7,7 @@ except:
     from ESPSerial import serialObject, get_portlist
 
 # MARK: CONSTANTES
-NUM_INPUTS = 4
+NUM_OUTPUTS = 4
 DIGITAL_OUTS = 4
 
 BUTTONS_OUTPUTS_ON_X_PLACE = 100
@@ -34,7 +34,7 @@ class HMIApp(Tk):
         self.iconphoto(True, PhotoImage(file='logo.png'))
 
         # Variables de estado
-        self.estado_inputs  = ["0"] * NUM_INPUTS
+        self.estado_outputs  = ["0"] * NUM_OUTPUTS
         self.conectado      = False
         self.serial_conn    = None
 
@@ -67,7 +67,7 @@ class HMIApp(Tk):
         """
         creacion de botones referentes a las salidas digitales ademas de los 'LEDs' representante de las entradas 
         """
-        for i in range(NUM_INPUTS):
+        for i in range(NUM_OUTPUTS):
             y = 50 + i * 50
             Label(self, text=f"Input {i}", font=GLOBAL_FONT, bg="#edb51a", padx=5).place(x=LABELINPUTS_X_PLACE, y=y)
 
@@ -145,14 +145,14 @@ class HMIApp(Tk):
         self.btn_actualizar["state"] = NORMAL if habilitado else DISABLED
 
     #MARK: Cambio de estado de entradas
-    def _set_estado_controles(self, estado:bool):
+    def _set_estado_controles(self, state_bool:bool):
         """
         Cambia el estado general de la entrada
 
         :param estado: True para activar controles, False para desactivar.
         """
         for b in self.botones_control:
-            b["state"] = NORMAL if estado else DISABLED
+            b["state"] = NORMAL if state_bool else DISABLED
 
     def _alternar_input(self, index: int, state: str):
         """
@@ -161,21 +161,21 @@ class HMIApp(Tk):
         :param index: Indice de la entrada a cambiar.
         :param state: Estado nuevo a modificar.
         """
-        self.estado_inputs[index] = "1" if state == "on" else "0"
+        self.estado_outputs[index] = "1" if state == "on" else "0"
         self.buttons_on[index]["state"] = DISABLED if state == "on" else NORMAL
         self.buttons_off[index]["state"] = NORMAL if state == "on" else DISABLED
         self._enviar_estado()
 
     def _input_all_on(self):
-        self.estado_inputs[:] = ["1"] * NUM_INPUTS
-        for i in range(NUM_INPUTS):
+        self.estado_outputs[:] = ["1"] * NUM_OUTPUTS
+        for i in range(NUM_OUTPUTS):
             self.buttons_on[i]["state"] = DISABLED
             self.buttons_off[i]["state"] = NORMAL
         self._enviar_estado()
 
     def _input_all_off(self):
-        self.estado_inputs[:] = ["0"] * NUM_INPUTS
-        for i in range(NUM_INPUTS):
+        self.estado_outputs[:] = ["0"] * NUM_OUTPUTS
+        for i in range(NUM_OUTPUTS):
             self.buttons_on[i]["state"] = NORMAL
             self.buttons_off[i]["state"] = DISABLED
         self._enviar_estado()
@@ -187,14 +187,7 @@ class HMIApp(Tk):
         :param paneles_info: Diccionario con clave = nombre panel, valor = [x, y]
         """
         for nombre, (x, y) in paneles_info.items():
-            panel = Label(self,
-                          text=f"{nombre}: 0",
-                          bg="#800080",   # morado
-                          fg="white",     # texto blanco
-                          font=GLOBAL_FONT,
-                          width=12,
-                          height=1,
-                          anchor="center")
+            panel = Label(self, text=f"{nombre}: 0", bg="#800080", fg="white", font=GLOBAL_FONT, width=12, height=1, anchor="center")
             panel.place(x=x, y=y)
             self.paneles_analogicos[nombre] = panel
 
@@ -232,7 +225,7 @@ class HMIApp(Tk):
     #MARK: Actualizacion y varibales 
     def _enviar_estado(self):
         if self.conectado and self.serial_conn:
-            estado = "".join(self.estado_inputs)
+            estado = "".join(self.estado_outputs)
             self.serial_conn.send_data(estado)
 
     def _actualizar_salidas(self):
@@ -240,7 +233,7 @@ class HMIApp(Tk):
             data = self.serial_conn.recibe_data()
             if isinstance(data, dict):
                 # Actualizar LEDs digitales
-                for i in range(NUM_INPUTS):
+                for i in range(NUM_OUTPUTS):
                     val = data.get(f"DI{i}", 0)
                     color = "green" if val else "gray"
                     self.leds_canvas[i].itemconfig(self.leds_rects[i], fill=color)
