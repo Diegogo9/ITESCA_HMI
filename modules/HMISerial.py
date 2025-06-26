@@ -10,13 +10,21 @@ except:
 NUM_INPUTS = 4
 DIGITAL_OUTS = 4
 
-BUTTONSINPUTSON_X_PLACE = 100
-BUTTONSINPUTSOFF_X_PLACE = 250
+BUTTONS_OUTPUTS_ON_X_PLACE = 100
+BUTTONS_OUTPUTS_OFF_X_PLACE = 250
 LEDINPUTS_X_POSITION = 600
 LABELINPUTS_X_PLACE = 30
 GLOBAL_FONT = ("Arial", 10)
 
 class HMIApp(Tk):
+    """
+    clase hija de la objeto Tk proveniente de la biblioteca(o modulo) tkinter
+    esta clase hija engloba todos los procedimientos de la interfaz visual 
+    como lo es el despliege de informacion como la conexión con el modulo 
+    propietario ESPSerial
+
+    :param Tk: clase madre 
+    """
     def __init__(self):
         super().__init__()
         self.title("Human Machine Interface")
@@ -55,59 +63,50 @@ class HMIApp(Tk):
             # Aquí podrías añadir más paneles si quieres
         })
 
-    # MARK: botones y LEDs
+    # MARK: botones y LEDs 
     def _crear_entradas(self):
+        """
+        creacion de botones referentes a las salidas digitales ademas de los 'LEDs' representante de las entradas 
+        """
         for i in range(NUM_INPUTS):
             y = 50 + i * 50
             Label(self, text=f"Input {i}", font=GLOBAL_FONT, bg="#edb51a", padx=5).place(x=LABELINPUTS_X_PLACE, y=y)
 
-            btn_on = Button(self,
-                            text="ON",
-                            font=GLOBAL_FONT,
-                            padx=40, 
-                            command=lambda i=i: self._alternar_input(i, "on"))
-            btn_on.place(x=BUTTONSINPUTSON_X_PLACE, y=y)
+            btn_on = Button(self, text="ON", font=GLOBAL_FONT, padx=40, command=lambda i=i: self._alternar_input(i, "on"))
+            btn_on.place(x=BUTTONS_OUTPUTS_ON_X_PLACE, y=y)
             self.buttons_on.append(btn_on)
             self.botones_control.append(btn_on)
 
-            btn_off = Button(self, text="OFF",
-                             font=GLOBAL_FONT, 
-                             padx=40, 
-                             command=lambda i=i: self._alternar_input(i, "off"),
-                             state=DISABLED)
-            btn_off.place(x=BUTTONSINPUTSOFF_X_PLACE, y=y)
+            btn_off = Button(self, text="OFF", font=GLOBAL_FONT, padx=40, command=lambda i=i: self._alternar_input(i, "off"), state=DISABLED)
+            btn_off.place(x=BUTTONS_OUTPUTS_OFF_X_PLACE, y=y)
             self.buttons_off.append(btn_off)
             self.botones_control.append(btn_off)
 
-            canvas = Canvas(self, 
-                            width=20,
-                            height=20, 
-                            bg="#edb51a", 
-                            highlightthickness=0)
+            canvas = Canvas(self, width=20, height=20, bg="#edb51a", highlightthickness=0)
             canvas.place(x=LEDINPUTS_X_POSITION, y=y + 5)
             rect = canvas.create_rectangle(0, 0, 20, 20, fill="gray", outline="black")
             self.leds_canvas.append(canvas)
             self.leds_rects.append(rect)
 
     def _crear_botones_globales(self):
-        btn_all_on = Button(self, 
-                           text="All On",
-                            command=self._input_all_on,
-                            font=GLOBAL_FONT,
-                            padx=30)
-        btn_all_on.place(x=BUTTONSINPUTSON_X_PLACE, y=250)
+        """
+        Creacion de botones allOn y allOff, que apagan o encienden todas las salidas
+        """
+
+        btn_all_on = Button(self, text="All On", command=self._input_all_on, font=GLOBAL_FONT, padx=30)
+        btn_all_on.place(x=BUTTONS_OUTPUTS_ON_X_PLACE, y=250)
         self.botones_control.append(btn_all_on)
 
-        btn_all_off = Button(self, 
-                             text="All Off", 
-                             command=self._input_all_off,
-                             font=GLOBAL_FONT,
-                             padx=35)
-        btn_all_off.place(x=BUTTONSINPUTSOFF_X_PLACE, y=250)
+        btn_all_off = Button(self, text="All Off", command=self._input_all_off, font=GLOBAL_FONT, padx=35)
+        btn_all_off.place(x=BUTTONS_OUTPUTS_OFF_X_PLACE, y=250)
         self.botones_control.append(btn_all_off)
 
     # MARK: TOOL BOX
     def _crear_toolbox(self):
+        """
+        toolbox hace referencia a el recuadro de opciones, donde en este caso
+        son las opciones de puertos.
+        """
         frame = Frame(self, bg="#d9d9d9", height=60)
 
         frame.pack(side=BOTTOM, fill=X)
@@ -127,13 +126,21 @@ class HMIApp(Tk):
         self.btn_conectar.pack(side=RIGHT, padx=5)
 
     def _actualizar_puertos(self):
+        """
+        funciion encargada de actualizar los puertos mostrados en el anterior
+        toolbox, los rercibe desde el modulo ESPSerial con portlist
+        
+        """
         puertos = get_portlist()
         valores = [f"{k} - {v}" for k, v in puertos.items()]
         self.combo_puertos["values"] = valores
         if valores:
             self.combo_puertos.current(0)
-
-    def _set_estado_toolbox(self, habilitado: bool):
+   
+    def _alternar_estado_toolbox(self, habilitado: bool):
+        """
+        funcio de desabilitado de el toolbox cuando se realice la conexion
+        """
         estado = "readonly" if habilitado else "disabled"
         self.combo_puertos["state"] = estado
         self.btn_actualizar["state"] = NORMAL if habilitado else DISABLED
@@ -194,6 +201,10 @@ class HMIApp(Tk):
 
     #MARK: CONEXION
     def _conectar(self):
+        """
+        procedimiento encargado de todo respecto a la conexion con el
+        microcontrolador
+        """
         seleccion = self.combo_puertos.get().split(" - ")[0]
         self.serial_conn = serialObject(seleccion, 115200)
         if self.serial_conn.connect():
@@ -201,11 +212,15 @@ class HMIApp(Tk):
             self.btn_desconectar["state"] = NORMAL
             self.conectado = True
             self._set_estado_controles(True)
-            self._set_estado_toolbox(False)
+            self._alternar_estado_toolbox(False)
             self._input_all_off()
 
     # MARK: DESCONEXION
     def _desconectar(self):
+        """
+        procedimiento encargado de todo respecto a la desconexion con el
+        microcontrolador
+        """       
         if self.serial_conn:
             self.serial_conn.close_port()
         self.conectado = False
@@ -213,7 +228,7 @@ class HMIApp(Tk):
         self._set_estado_controles(False)
         self.btn_conectar["state"] = NORMAL
         self.btn_desconectar["state"] = DISABLED
-        self._set_estado_toolbox(True)
+        self._alternar_estado_toolbox(True)
 
     #MARK: MANEJO DE LEDs
     def _enviar_estado(self):
