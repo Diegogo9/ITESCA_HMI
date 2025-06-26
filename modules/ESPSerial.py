@@ -1,9 +1,10 @@
 import json
 import time
 import serial
-from serial.tools import list_ports  # Importación correcta
+from serial.tools import list_ports
+#from typing import Union
 
-DIGITAL_OUTS = 4
+DIGITAL_INPUTS_OUTPUTS = 4
 
 # MARK: Obtener puertos
 def get_portlist(print_data: bool = False) -> dict[str, str]:
@@ -24,31 +25,34 @@ def get_portlist(print_data: bool = False) -> dict[str, str]:
 
 # MARK: Creacion del Objeto
 class serialObject:
-    """ Clase general que posse toda la informacion y metodos de trabajo. """
-
-    def __init__(self, com_port: str, baudrate: int, timeout= 1.0, retries= 3) -> None:
+    """
+    Clase general que posee toda la informacion y metodos de conexión con el 
+    microcontrolador, no posee ninguna interfaz grafica.
+    """
+    def __init__(self, com_port: str, baudrate: int, timeout= 1.0, retries= 3):
         """
         Inicializa el objtero tipo serialObject.
-
         :param com_port: Puerto serial al cual se conectara la computadora.
         :param baudrate: Baudios especificos del controlador.
         """
         self.com_port       = com_port
         self.baudrate       = baudrate
-        self.serial_port    = None
         self.timeout        = timeout
         self.retries        = retries
+        self.serial_port    = None
 
         """ Diccionarios reservado de control """
-        self._DigitalInputsDict = {f"DI{i}": False for i in range(DIGITAL_OUTS)}
+        self._digitalOutputsDict = {f"DI{i}": False for i in range(DIGITAL_INPUTS_OUTPUTS)}
         self._AnalogInputsDict  = {"A0": 0, "A1": 0}
-
         # self._AnalogInputsDict = {"AI0": None, "AI1": None, "AI2": None, "AI3": None}
 
     # MARK: conectar con µC
     def connect(self) -> bool:
         """
-        Inicializa la conexion con el puerto seleccionado.
+        Inicializa la conexion con el puerto seleccionad
+
+        :return estado: Retorna un True si la conexion fue exitosa, False en 
+        el caso contrario.
         """
         for attempt in range(self.retries):
             try:
@@ -76,7 +80,7 @@ class serialObject:
         if not (self.serial_port and self.serial_port.is_open):
             return False
 
-        if not (user_data.isdigit() and len(user_data) == DIGITAL_OUTS and set(user_data) <= {"0", "1"}):
+        if not (user_data.isdigit() and len(user_data) == DIGITAL_INPUTS_OUTPUTS and set(user_data) <= {"0", "1"}):
             return False
 
         self.serial_port.reset_input_buffer()
@@ -88,7 +92,9 @@ class serialObject:
         return True
     
     # MARK: Recibir datos.
-    def recibe_data(self) -> dict | str:
+
+    #def recibe_data(self) -> Union[Dict[str, Union[bool, int]], str]:
+    def recibe_data(self) -> dict[str, bool | int] | str:
         """ 
         Recepción de datos del puerto. 
 
@@ -111,12 +117,12 @@ class serialObject:
                         parsed_data = json.loads(raw_info)
                         for key, value in parsed_data.items():
                             if key.startswith("DI"):
-                                self._DigitalInputsDict[key] = value
+                                self._digitalOutputsDict[key] = value
                             elif key.startswith("A"):
                                 self._AnalogInputsDict[key] = value
 
                         # Combinar y devolver todo el estado
-                        return {**self._DigitalInputsDict, **self._AnalogInputsDict}
+                        return {**self._digitalOutputsDict, **self._AnalogInputsDict}
                     
                     except json.JSONDecodeError:
                         return f"Error: La respuesta no es JSON válido: {repr(raw_info)}"
