@@ -2,6 +2,11 @@
 Proyecto de residencias profesionales  
 Sistema de Interfaz Humano Maquina usando python Tkinter  
 
+Probado en micropython con:  
+- Raspberry pi pico (RP2040)
+- Esp32 WROOM
+- Esp32s2 
+
 Implementando :
 - 4 Entradas Digitales
 - 2 Enradas Analogas
