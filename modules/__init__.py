@@ -1,4 +1,4 @@
-from tkinter import *
+import tkinter
 from tkinter import ttk
 import json
 import time
