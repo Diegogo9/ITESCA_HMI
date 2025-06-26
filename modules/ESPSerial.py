@@ -6,12 +6,13 @@ from serial.tools import list_ports  # Importación correcta
 DIGITAL_OUTS = 4
 
 # MARK: Obtener puertos
-def get_portlist(print_data: bool = False) -> dict:
+def get_portlist(print_data: bool = False) -> dict[str, str]:
     """ 
     Regresa la lista de los puertos seriales conectados.
 
     :param print_data: Si se especifica, la imprimira en consola. 
-    
+    :return port_dict: retorna el diccionario con todos los puertos disponibles, con
+    su nombre y descripcion en caso de poseerla.
     """
     port_list = {
         f"{port.device}": f"{port.description}"for port in list_ports.comports()}
@@ -40,19 +41,18 @@ class serialObject:
 
         """ Diccionarios reservado de control """
         self._DigitalInputsDict = {f"DI{i}": False for i in range(DIGITAL_OUTS)}
-        self._AnalogInputsDict = {"A0": 0, "A1": 0}
+        self._AnalogInputsDict  = {"A0": 0, "A1": 0}
 
         # self._AnalogInputsDict = {"AI0": None, "AI1": None, "AI2": None, "AI3": None}
 
     # MARK: conectar con µC
     def connect(self) -> bool:
         """
-            Inicializa la conexion con el puerto seleccionado.
+        Inicializa la conexion con el puerto seleccionado.
         """
         for attempt in range(self.retries):
             try:
                 self.serial_port = serial.Serial(self.com_port, self.baudrate, timeout=self.timeout, write_timeout=self.timeout)
-                    
                 if self.serial_port.is_open:
                     self.send_data("0000")
                     return True
@@ -62,7 +62,6 @@ class serialObject:
             except serial.SerialException as e:
                 print(f"Intento {attempt+1} fallido: {str(e)}")
                 time.sleep(1)
-
         return False
     
     # MARK: Enviar datos.
@@ -70,7 +69,9 @@ class serialObject:
         """
         Envia datos digitales al puerto del objeto.
         
-        :param user_data: Datos ingresados por el usuario
+        :param user_data: Datos ingresados por el usuario.
+        :return bool: Retorna un True si el mensaje fue enviado y se recibio
+        una respuesta satisfactoria, False en caso contrario.
         """
         if not (self.serial_port and self.serial_port.is_open):
             return False
@@ -81,8 +82,6 @@ class serialObject:
         self.serial_port.reset_input_buffer()
         self.serial_port.write((f'POST {user_data}\n').encode())
         # self.serial_port.flush()
-
-
         if self.serial_port.readline().decode().strip() != '200':
             return False
         
@@ -98,7 +97,7 @@ class serialObject:
         """
         if not (self.serial_port and self.serial_port.is_open):
             return ""
-
+        
         try:
             self.serial_port.reset_input_buffer()
             self.serial_port.write(b'GET\n')
@@ -130,7 +129,6 @@ class serialObject:
         except Exception as e:
             return f"Error inesperado: {str(e)}"
 
-    
     # MARK: Cerrar puerto.
     def close_port(self) -> None:
         """ Cierra de forma controlada el puerto Serie """
@@ -144,7 +142,6 @@ class serialObject:
             except Exception as e:
                 print(f"Advertencia: error al cerrar el puerto: {e}")
 
-
     # MARK: Destructor Objeto
     def __del__(self):
         try:
@@ -152,7 +149,6 @@ class serialObject:
                 self.serial_port.close()
         except Exception:
             pass  # Ignorar errores en el destructor
-
 
 if __name__ == '__main__':
     print('Codigo escrito por: Diego Ramos - 20130235.')

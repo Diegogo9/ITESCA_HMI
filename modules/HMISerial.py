@@ -60,10 +60,9 @@ class HMIApp(Tk):
         self._crear_paneles_analogicos({
             "A0": (400, 50),
             "A1": (400, 100),
-            # Aquí podrías añadir más paneles si quieres
         })
 
-    # MARK: botones y LEDs 
+    # MARK: Botones y LEDs 
     def _crear_entradas(self):
         """
         creacion de botones referentes a las salidas digitales ademas de los 'LEDs' representante de las entradas 
@@ -101,7 +100,7 @@ class HMIApp(Tk):
         btn_all_off.place(x=BUTTONS_OUTPUTS_OFF_X_PLACE, y=250)
         self.botones_control.append(btn_all_off)
 
-    # MARK: TOOL BOX
+    # MARK: Manejo de toolbox
     def _crear_toolbox(self):
         """
         toolbox hace referencia a el recuadro de opciones, donde en este caso
@@ -145,7 +144,7 @@ class HMIApp(Tk):
         self.combo_puertos["state"] = estado
         self.btn_actualizar["state"] = NORMAL if habilitado else DISABLED
 
-    #MARK: CAMBIOS DE ESTADO
+    #MARK: Cambio de estado de entradas
     def _set_estado_controles(self, estado:bool):
         """
         Cambia el estado general de la entrada
@@ -199,7 +198,7 @@ class HMIApp(Tk):
             panel.place(x=x, y=y)
             self.paneles_analogicos[nombre] = panel
 
-    #MARK: CONEXION
+    #MARK: Conexion
     def _conectar(self):
         """
         procedimiento encargado de todo respecto a la conexion con el
@@ -215,7 +214,7 @@ class HMIApp(Tk):
             self._alternar_estado_toolbox(False)
             self._input_all_off()
 
-    # MARK: DESCONEXION
+    # MARK: Desconexion
     def _desconectar(self):
         """
         procedimiento encargado de todo respecto a la desconexion con el
@@ -230,7 +229,7 @@ class HMIApp(Tk):
         self.btn_desconectar["state"] = DISABLED
         self._alternar_estado_toolbox(True)
 
-    #MARK: MANEJO DE LEDs
+    #MARK: Actualizacion y varibales 
     def _enviar_estado(self):
         if self.conectado and self.serial_conn:
             estado = "".join(self.estado_inputs)
