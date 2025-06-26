@@ -16,6 +16,7 @@ LEDINPUTS_X_POSITION = 600
 LABELINPUTS_X_PLACE = 30
 GLOBAL_FONT = ("Arial", 10)
 
+
 class HMIApp(Tk):
     """
     clase hija de la objeto Tk proveniente de la biblioteca(o modulo) tkinter

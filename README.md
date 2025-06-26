@@ -2,9 +2,11 @@
 Proyecto de residencias profesionales  
 Sistema de Interfaz Humano Maquina usando python Tkinter  
 
+
+
 Probado en micropython con:  
 - Raspberry pi pico (RP2040)
-- Esp32 WROOM
+- Esp-WROOM-32 
 - Esp32s2 
 
 Implementando :
@@ -12,9 +14,11 @@ Implementando :
 - 2 Enradas Analogas
 - 4 Salidas Digitales 
 
+![screenshot del entorno grafico de la aplicacion tkinter](GUI.png)
 
 > [!NOTE]
 > Este proyecto ha sido planteado desde le principio como un prototipo
+
 
 Programador: Diego Ramos A.
 
@@ -22,5 +26,5 @@ Ingeniero Electrónico especializado en Mecatrónica
 Matricula: 20130235  
 Correo de contacto: diegogaelramosacosta@gmail.com  
 
-Asesor externo de residencias: Mtro Ivan Luna  
-Asesor interno de recidencias: Maestra Ana Mayra Luna  
+Asesor externo de residencias: Mtro. Iván Oswaldo Luna Rodríguez  
+Asesor interno de recidencias: Mtra. Ana Mayra Luna Rodríguez
