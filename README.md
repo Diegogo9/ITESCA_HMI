@@ -11,7 +11,7 @@ Probado en micropython con:
 
 Implementando :
 - 4 Entradas Digitales
-- 2 Enradas Analogas
+- 2 Entradas Analogas
 - 4 Salidas Digitales 
 
 ![screenshot del entorno grafico de la aplicacion tkinter](GUI.png)
