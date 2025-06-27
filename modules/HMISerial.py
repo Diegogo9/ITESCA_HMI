@@ -16,7 +16,7 @@ LEDINPUTS_X_POSITION = 600
 LABELINPUTS_X_PLACE = 30
 GLOBAL_FONT = ("Arial", 10)
 
-
+# MARK: Inicializacion
 class HMIApp(Tk):
     """
     clase hija de la objeto Tk proveniente de la biblioteca(o modulo) tkinter
@@ -59,30 +59,39 @@ class HMIApp(Tk):
 
         self.paneles_analogicos = {}
         self._crear_paneles_analogicos({
-            "A0": (400, 50),
+            "A0": (400, 50), #Nombre y ubicacion de los paneles
             "A1": (400, 100),
         })
 
     # MARK: Botones y LEDs 
     def _crear_entradas(self):
         """
-        creacion de botones referentes a las salidas digitales ademas de los 'LEDs' representante de las entradas 
+        creacion de botones referentes a las salidas digitales ademas de los 
+        'LEDs' representante de las entradas 
         """
         for i in range(NUM_OUTPUTS):
             y = 50 + i * 50
-            Label(self, text=f"Input {i}", font=GLOBAL_FONT, bg="#edb51a", padx=5).place(x=LABELINPUTS_X_PLACE, y=y)
 
-            btn_on = Button(self, text="ON", font=GLOBAL_FONT, padx=40, command=lambda i=i: self._alternar_input(i, "on"))
+            Label(self, text=f"Input {i}", font=GLOBAL_FONT,
+                                           bg="#edb51a", 
+                                           padx=5).place(x=LABELINPUTS_X_PLACE, y=y)
+
+            btn_on = Button(self, text="ON", font=GLOBAL_FONT, 
+                                  padx=40,
+                                  command=lambda i=i: self._alternar_input(i, "on"))
             btn_on.place(x=BUTTONS_OUTPUTS_ON_X_PLACE, y=y)
             self.buttons_on.append(btn_on)
             self.botones_control.append(btn_on)
 
-            btn_off = Button(self, text="OFF", font=GLOBAL_FONT, padx=40, command=lambda i=i: self._alternar_input(i, "off"), state=DISABLED)
+            btn_off = Button(self, text="OFF", font=GLOBAL_FONT, 
+                                   padx=40,
+                                   command=lambda i=i: self._alternar_input(i, "off"),
+                                   state=DISABLED)
             btn_off.place(x=BUTTONS_OUTPUTS_OFF_X_PLACE, y=y)
             self.buttons_off.append(btn_off)
             self.botones_control.append(btn_off)
 
-            canvas = Canvas(self, width=20, height=20, bg="#edb51a", highlightthickness=0)
+            canvas = Canvas(self, width=20, height=20, bg="#edb51a")
             canvas.place(x=LEDINPUTS_X_POSITION, y=y + 5)
             rect = canvas.create_rectangle(0, 0, 20, 20, fill="gray", outline="black")
             self.leds_canvas.append(canvas)
@@ -90,62 +99,22 @@ class HMIApp(Tk):
 
     def _crear_botones_globales(self):
         """
-        Creacion de botones allOn y allOff, que apagan o encienden todas las salidas
+        Creacion de botones allOn y allOff, que apagan o encienden todas 
+        las salidas
         """
-
-        btn_all_on = Button(self, text="All On", command=self._input_all_on, font=GLOBAL_FONT, padx=30)
+        btn_all_on = Button(self, text="All On", command=self._input_all_on, 
+                                                 font=GLOBAL_FONT, padx=30)
         btn_all_on.place(x=BUTTONS_OUTPUTS_ON_X_PLACE, y=250)
         self.botones_control.append(btn_all_on)
 
-        btn_all_off = Button(self, text="All Off", command=self._input_all_off, font=GLOBAL_FONT, padx=35)
+        btn_all_off = Button(self, text="All Off", command=self._input_all_off,
+                                                   font=GLOBAL_FONT,
+                                                   padx=35)
         btn_all_off.place(x=BUTTONS_OUTPUTS_OFF_X_PLACE, y=250)
         self.botones_control.append(btn_all_off)
 
-    # MARK: Manejo de toolbox
-    def _crear_toolbox(self):
-        """
-        toolbox hace referencia a el recuadro de opciones, donde en este caso
-        son las opciones de puertos.
-        """
-        frame = Frame(self, bg="#d9d9d9", height=60)
-
-        frame.pack(side=BOTTOM, fill=X)
-
-        Label(frame,  text="Puerto:",  bg="#d9d9d9").pack(side=LEFT, padx=10)
-
-        self.combo_puertos = ttk.Combobox(frame, state="readonly", width=30)
-        self.combo_puertos.pack(side=LEFT, padx=10)
-
-        self.btn_actualizar = Button(frame, text="Actualizar", command=self._actualizar_puertos)
-        self.btn_actualizar.pack(side=LEFT, padx=5)
-
-        self.btn_desconectar = Button(frame, text="Desconectar", command=self._desconectar, state=DISABLED)
-        self.btn_desconectar.pack(side=RIGHT, padx=5)
-
-        self.btn_conectar = Button(frame, text="Conectar", command=self._conectar)
-        self.btn_conectar.pack(side=RIGHT, padx=5)
-
-    def _actualizar_puertos(self):
-        """
-        funciion encargada de actualizar los puertos mostrados en el anterior
-        toolbox, los rercibe desde el modulo ESPSerial con portlist
-        
-        """
-        puertos = get_portlist()
-        valores = [f"{k} - {v}" for k, v in puertos.items()]
-        self.combo_puertos["values"] = valores
-        if valores:
-            self.combo_puertos.current(0)
-   
-    def _alternar_estado_toolbox(self, habilitado: bool):
-        """
-        funcio de desabilitado de el toolbox cuando se realice la conexion
-        """
-        estado = "readonly" if habilitado else "disabled"
-        self.combo_puertos["state"] = estado
-        self.btn_actualizar["state"] = NORMAL if habilitado else DISABLED
-
-    #MARK: Cambio de estado de entradas
+    
+    #MARK: Estado botones
     def _set_estado_controles(self, state_bool:bool):
         """
         Cambia el estado general de la entrada
@@ -185,12 +154,63 @@ class HMIApp(Tk):
         """
         Crea múltiples paneles analógicos de forma homogénea.
 
-        :param paneles_info: Diccionario con clave = nombre panel, valor = [x, y]
+        :param paneles_info: Diccionario con 
+        clave = ("nombre panel", valor = [x, y])
         """
         for nombre, (x, y) in paneles_info.items():
-            panel = Label(self, text=f"{nombre}: 0", bg="#800080", fg="white", font=GLOBAL_FONT, width=12, height=1, anchor="center")
+            panel = Label(self, text=f"{nombre}: 0",
+                                bg="#800080", 
+                                fg="white", 
+                                font=GLOBAL_FONT, 
+                                width=12, 
+                                height=1, 
+                                anchor="center")
             panel.place(x=x, y=y)
             self.paneles_analogicos[nombre] = panel
+
+    # MARK: Manejo toolbox
+    def _crear_toolbox(self):
+        """
+        toolbox hace referencia al recuadro de opciones, donde en este caso
+        son las opciones de puertos.
+        """
+        frame = Frame(self, bg="#d9d9d9", height=60)
+        frame.pack(side=BOTTOM, fill=X)
+
+        Label(frame,  text="Puerto:",  bg="#d9d9d9").pack(side=LEFT, padx=10)
+        self.combo_puertos = ttk.Combobox(frame, state="readonly", width=30)
+        self.combo_puertos.pack(side=LEFT, padx=10)
+
+        self.btn_actualizar = Button(frame, text="Actualizar",
+                                            command=self._actualizar_puertos)
+        self.btn_actualizar.pack(side=LEFT, padx=5)
+
+        self.btn_desconectar = Button(frame, text="Desconectar", 
+                                             command=self._desconectar, 
+                                             state=DISABLED)
+        self.btn_desconectar.pack(side=RIGHT, padx=5)
+
+        self.btn_conectar = Button(frame, text="Conectar", command=self._conectar)
+        self.btn_conectar.pack(side=RIGHT, padx=5)
+
+    def _actualizar_puertos(self):
+        """
+        función encargada de actualizar los puertos mostrados en el anterior
+        toolbox, los rercibe desde el modulo ESPSerial con portlist.
+        """
+        puertos = get_portlist()
+        valores = [f"{k} - {v}" for k, v in puertos.items()]
+        self.combo_puertos["values"] = valores
+        if valores:
+            self.combo_puertos.current(0)
+
+    def _alternar_estado_toolbox(self, habilitado: bool):
+        """
+        función de deshabilitado del toolbox cuando se realice la conexión.
+        """
+        estado = "readonly" if habilitado else "disabled"
+        self.combo_puertos["state"] = estado
+        self.btn_actualizar["state"] = NORMAL if habilitado else DISABLED
 
     #MARK: Conexion
     def _conectar(self):
@@ -223,7 +243,7 @@ class HMIApp(Tk):
         self.btn_desconectar["state"] = DISABLED
         self._alternar_estado_toolbox(True)
 
-    #MARK: Actualizacion y varibales 
+    #MARK: Actualizaciones
     def _enviar_estado(self):
         if self.conectado and self.serial_conn:
             estado = "".join(self.estado_outputs)

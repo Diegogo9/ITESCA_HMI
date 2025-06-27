@@ -12,8 +12,8 @@ def get_portlist(print_data: bool = False) -> dict[str, str]:
     Regresa la lista de los puertos seriales conectados.
 
     :param print_data: Si se especifica, la imprimira en consola. 
-    :return port_dict: retorna el diccionario con todos los puertos disponibles, con
-    su nombre y descripcion en caso de poseerla.
+    :return port_dict: retorna el diccionario con todos los puertos disponibles,
+    con su nombre y descripcion en caso de poseerla.
     """
     port_list = {
         f"{port.device}": f"{port.description}"for port in list_ports.comports()}
@@ -29,7 +29,7 @@ class serialObject:
     Clase general que posee toda la informacion y metodos de conexión con el 
     microcontrolador, no posee ninguna interfaz grafica.
     """
-    def __init__(self, com_port: str, baudrate: int, timeout= 1.0, retries= 3):
+    def __init__(self, com_port: str, baudrate= 115200, timeout= 1.0, retries= 3):
         """
         Inicializa el objtero tipo serialObject.
 
@@ -46,9 +46,11 @@ class serialObject:
         self.serial_port    = None
 
         """ Diccionarios reservado de control """
-        self._digitalOutputsDict = {f"DI{i}": False for i in range(DIGITAL_INPUTS_OUTPUTS)}
+        self._digitalOutputsDict = {
+            f"DI{i}": False for i in range(DIGITAL_INPUTS_OUTPUTS)}
+        
         self._AnalogInputsDict  = {"A0": 0, "A1": 0}
-        # self._AnalogInputsDict = {"AI0": None, "AI1": None, "AI2": None, "AI3": None}
+
 
     # MARK: conectar con µC
     def connect(self) -> bool:
@@ -60,7 +62,11 @@ class serialObject:
         """
         for attempt in range(self.retries):
             try:
-                self.serial_port = serial.Serial(self.com_port, self.baudrate, timeout=self.timeout, write_timeout=self.timeout)
+                self.serial_port = serial.Serial(self.com_port, 
+                                                    self.baudrate, 
+                                                    timeout=self.timeout, 
+                                                    write_timeout=self.timeout)
+
                 if self.serial_port.is_open:
                     self.send_data("0000")
                     return True
@@ -71,7 +77,7 @@ class serialObject:
                 print(f"Intento {attempt+1} fallido: {str(e)}")
                 time.sleep(1)
         return False
-    
+
     # MARK: Enviar datos.
     def send_data(self, user_data: str) -> bool:
         """
@@ -84,7 +90,10 @@ class serialObject:
         if not (self.serial_port and self.serial_port.is_open):
             return False
 
-        if not (user_data.isdigit() and len(user_data) == DIGITAL_INPUTS_OUTPUTS and set(user_data) <= {"0", "1"}):
+        if not (user_data.isdigit() and
+                len(user_data) == DIGITAL_INPUTS_OUTPUTS and 
+                set(user_data) <= {"0", "1"}):
+            
             return False
 
         self.serial_port.reset_input_buffer()
@@ -94,9 +103,8 @@ class serialObject:
             return False
         
         return True
-    
+
     # MARK: Recibir datos.
-    #def recibe_data(self) -> Union[Dict[str, Union[bool, int]], str]:
     def recibe_data(self) -> dict[str, bool | int] | str:
         """ 
         Recepción de datos del puerto. 
@@ -146,6 +154,7 @@ class serialObject:
                 self.send_data('0000')  # Intentar apagar salidas antes de cerrar
             except Exception as e:
                 print(f"Advertencia: error al enviar datos antes de cerrar puerto: {e}")
+
             try:
                 self.serial_port.close()
             except Exception as e:
