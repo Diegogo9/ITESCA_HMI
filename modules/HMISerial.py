@@ -8,28 +8,24 @@ except:
 
 # MARK: CONSTANTES
 NUM_OUTPUTS = 4
-DIGITAL_OUTS = 4
 
 BUTTONS_OUTPUTS_ON_X_PLACE = 150
 BUTTONS_OUTPUTS_OFF_X_PLACE = 300
-LEDINPUTS_X_POSITION = 650
+LEDINPUTS_X_POSITION = 600
 LABELINPUTS_X_PLACE = 30
 GLOBAL_FONT = ("Arial", 10)
 
 # MARK: Inicializacion
 class HMIApp(Tk):
     """
-    clase hija de la objeto Tk proveniente de la biblioteca(o modulo) tkinter
-    esta clase hija engloba todos los procedimientos de la interfaz visual 
-    como lo es el despliege de informacion como la conexión con el modulo 
-    propietario ESPSerial
+    clase que hereda los Tk proveniente de la biblioteca(o modulo) tkinter
 
     :param Tk: clase madre 
     """
     def __init__(self):
         super().__init__()
         self.title("Human Machine Interface")
-        self.geometry("750x450")
+        self.geometry("675x450")
         self.resizable(False, False)
         self.configure(bg="#edb51a")
         self.iconphoto(True, PhotoImage(file='logo.png'))
@@ -46,10 +42,15 @@ class HMIApp(Tk):
         self.leds_canvas        = []
         self.leds_rects         = []
 
+        self.paneles_analogicos = {}
+
         # Componentes
+        self.nombre_entradas = ("OUTPUT\t0", "OUTPUT\t1", "OUTPUT\t2", "OUTPUT\t3")
         self._crear_entradas()
         self._crear_botones_globales()
         self._crear_toolbox()
+        self._crear_paneles_analogicos({"A0": ("A0", (450, 50)),
+                                        "A1": ("A1", (450, 100))})
 
         # Inicialización
         self._set_estado_controles(False)
@@ -57,13 +58,6 @@ class HMIApp(Tk):
         self._ciclo_actualizacion_leds()
         self.protocol("WM_DELETE_WINDOW", self._cerrar_aplicacion)
 
-        self.paneles_analogicos = {}
-        self._crear_paneles_analogicos({
-            "A0": {"label": "Temperatura", "pos": (450, 50)},
-            "A1": {"label": "Humedad", "pos": (450, 100)},
-        })
-
-    
     # MARK: Cierre de ventana
     def _cerrar_aplicacion(self):
         try:
@@ -80,26 +74,24 @@ class HMIApp(Tk):
         'LEDs' representante de las entradas 
         """
 
-        Label(self, text=f"VALVULA 0", font=GLOBAL_FONT, bg="#edb51a", padx=5).place(x=LABELINPUTS_X_PLACE, y=50)
-        Label(self, text=f"PUERTA 0", font=GLOBAL_FONT, bg="#edb51a", padx=5).place(x=LABELINPUTS_X_PLACE, y=100)
-        Label(self, text=f"MOTOR 0", font=GLOBAL_FONT, bg="#edb51a", padx=5).place(x=LABELINPUTS_X_PLACE, y=150)
-        Label(self, text=f"MOTOR 1", font=GLOBAL_FONT, bg="#edb51a", padx=5).place(x=LABELINPUTS_X_PLACE, y=200)
-
-        for i in range(NUM_OUTPUTS):
+        for i, names in enumerate(self.nombre_entradas):
             y = 50 + i * 50
-
+            Label(self, text=f"{names}",
+                        font=GLOBAL_FONT, 
+                        bg="#edb51a", 
+                        padx=5).place(x=LABELINPUTS_X_PLACE, y=y)
 
             btn_on = Button(self, text="ON", font=GLOBAL_FONT, 
-                                  padx=40,
-                                  command=lambda i=i: self._alternar_input(i, "on"))
+                                padx=40,
+                                command=lambda i=i: self._alternar_input(i, "on"))
             btn_on.place(x=BUTTONS_OUTPUTS_ON_X_PLACE, y=y)
             self.buttons_on.append(btn_on)
             self.botones_control.append(btn_on)
 
             btn_off = Button(self, text="OFF", font=GLOBAL_FONT, 
-                                   padx=40,
-                                   command=lambda i=i: self._alternar_input(i, "off"),
-                                   state=DISABLED)
+                                padx=40,
+                                command=lambda i=i: self._alternar_input(i, "off"),
+                                state=DISABLED)
             btn_off.place(x=BUTTONS_OUTPUTS_OFF_X_PLACE, y=y)
             self.buttons_off.append(btn_off)
             self.botones_control.append(btn_off)
@@ -117,17 +109,16 @@ class HMIApp(Tk):
         las salidas
         """
         btn_all_on = Button(self, text="All On", command=self._input_all_on, 
-                                                 font=GLOBAL_FONT, padx=30)
+                                                    font=GLOBAL_FONT, padx=30)
         btn_all_on.place(x=BUTTONS_OUTPUTS_ON_X_PLACE, y=250)
         self.botones_control.append(btn_all_on)
 
         btn_all_off = Button(self, text="All Off", command=self._input_all_off,
-                                                   font=GLOBAL_FONT,
-                                                   padx=35)
+                                                    font=GLOBAL_FONT,
+                                                    padx=35)
         btn_all_off.place(x=BUTTONS_OUTPUTS_OFF_X_PLACE, y=250)
         self.botones_control.append(btn_all_off)
-
-    
+ 
     #MARK: Estado botones
     def _set_estado_controles(self, state_bool:bool):
         """
@@ -165,27 +156,17 @@ class HMIApp(Tk):
         self._enviar_estado()
 
     # MARK: Panel Analogo
-    def _crear_paneles_analogicos(self, paneles_info: dict[str, dict]):
-        """
-        Crea múltiples paneles analógicos con nombres personalizados.
-
-        :param paneles_info: Diccionario con clave = nombre real del dato
-                            valor = {"label": "nombre personalizado", "pos": (x, y)}
-        """
-        for nombre_real, info in paneles_info.items():
-            nombre_label = info["label"]
-            x, y = info["pos"]
-
-            panel = Label(self, text=f"{nombre_label}: 0",
-                                bg="#800080", 
-                                fg="white", 
-                                font=GLOBAL_FONT, 
-                                width=20, 
-                                height=1, 
-                                anchor="center")
+    def _crear_paneles_analogicos(self, paneles_info: dict[str, tuple[str, tuple[int, int]]]):
+        for key, (label_text, (x, y)) in paneles_info.items():
+            panel = Label(self, text=f"{label_text}: 0",
+                                bg="#800080",
+                                fg="white",
+                                font=GLOBAL_FONT,
+                                width=15,
+                                height=1,
+                                anchor="w")
             panel.place(x=x, y=y)
-            self.paneles_analogicos[nombre_real] = panel
-
+            self.paneles_analogicos[key] = panel
 
     # MARK: Manejo toolbox
     def _crear_toolbox(self):
