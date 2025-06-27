@@ -12,7 +12,7 @@ DIGITAL_OUTS = 4
 
 BUTTONS_OUTPUTS_ON_X_PLACE = 150
 BUTTONS_OUTPUTS_OFF_X_PLACE = 300
-LEDINPUTS_X_POSITION = 600
+LEDINPUTS_X_POSITION = 650
 LABELINPUTS_X_PLACE = 30
 GLOBAL_FONT = ("Arial", 10)
 
@@ -29,7 +29,7 @@ class HMIApp(Tk):
     def __init__(self):
         super().__init__()
         self.title("Human Machine Interface")
-        self.geometry("650x450")
+        self.geometry("750x450")
         self.resizable(False, False)
         self.configure(bg="#edb51a")
         self.iconphoto(True, PhotoImage(file='logo.png'))
@@ -58,8 +58,11 @@ class HMIApp(Tk):
         self.protocol("WM_DELETE_WINDOW", self._cerrar_aplicacion)
 
         self.paneles_analogicos = {}
-        self._crear_paneles_analogicos({"A0": (450, 50), #Nombre y ubicacion de los paneles
-                                        "A1": (450, 100)})
+        self._crear_paneles_analogicos({
+            "A0": {"label": "Temperatura", "pos": (450, 50)},
+            "A1": {"label": "Humedad", "pos": (450, 100)},
+        })
+
     
     # MARK: Cierre de ventana
     def _cerrar_aplicacion(self):
@@ -76,12 +79,15 @@ class HMIApp(Tk):
         creacion de botones referentes a las salidas digitales ademas de los 
         'LEDs' representante de las entradas 
         """
+
+        Label(self, text=f"VALVULA 0", font=GLOBAL_FONT, bg="#edb51a", padx=5).place(x=LABELINPUTS_X_PLACE, y=50)
+        Label(self, text=f"PUERTA 0", font=GLOBAL_FONT, bg="#edb51a", padx=5).place(x=LABELINPUTS_X_PLACE, y=100)
+        Label(self, text=f"MOTOR 0", font=GLOBAL_FONT, bg="#edb51a", padx=5).place(x=LABELINPUTS_X_PLACE, y=150)
+        Label(self, text=f"MOTOR 1", font=GLOBAL_FONT, bg="#edb51a", padx=5).place(x=LABELINPUTS_X_PLACE, y=200)
+
         for i in range(NUM_OUTPUTS):
             y = 50 + i * 50
 
-            Label(self, text=f"OUTPUTS {i}", font=GLOBAL_FONT,
-                                           bg="#edb51a", 
-                                           padx=5).place(x=LABELINPUTS_X_PLACE, y=y)
 
             btn_on = Button(self, text="ON", font=GLOBAL_FONT, 
                                   padx=40,
@@ -99,7 +105,8 @@ class HMIApp(Tk):
             self.botones_control.append(btn_off)
 
             canvas = Canvas(self, width=20, height=20, bg="#edb51a")
-            canvas.place(x=LEDINPUTS_X_POSITION, y=y + 5)
+            canvas.place(x=LEDINPUTS_X_POSITION, y=y)
+
             rect = canvas.create_rectangle(0, 0, 20, 20, fill="gray", outline="black")
             self.leds_canvas.append(canvas)
             self.leds_rects.append(rect)
@@ -158,23 +165,27 @@ class HMIApp(Tk):
         self._enviar_estado()
 
     # MARK: Panel Analogo
-    def _crear_paneles_analogicos(self, paneles_info: dict[str, tuple[int, int]]):
+    def _crear_paneles_analogicos(self, paneles_info: dict[str, dict]):
         """
-        Crea múltiples paneles analógicos de forma homogénea.
+        Crea múltiples paneles analógicos con nombres personalizados.
 
-        :param paneles_info: Diccionario con 
-        clave = ("nombre panel", valor = [x, y])
+        :param paneles_info: Diccionario con clave = nombre real del dato
+                            valor = {"label": "nombre personalizado", "pos": (x, y)}
         """
-        for nombre, (x, y) in paneles_info.items():
-            panel = Label(self, text=f"{nombre}: 0",
+        for nombre_real, info in paneles_info.items():
+            nombre_label = info["label"]
+            x, y = info["pos"]
+
+            panel = Label(self, text=f"{nombre_label}: 0",
                                 bg="#800080", 
                                 fg="white", 
                                 font=GLOBAL_FONT, 
-                                width=12, 
+                                width=20, 
                                 height=1, 
                                 anchor="center")
             panel.place(x=x, y=y)
-            self.paneles_analogicos[nombre] = panel
+            self.paneles_analogicos[nombre_real] = panel
+
 
     # MARK: Manejo toolbox
     def _crear_toolbox(self):
@@ -270,8 +281,9 @@ class HMIApp(Tk):
                 # Actualizar paneles analógicos si existen
                 for nombre in ["A0", "A1"]:
                     if nombre in data and nombre in self.paneles_analogicos:
-                        self.paneles_analogicos[nombre].config(text= 
-                                                        f"{nombre}: {data[nombre]}")
+                        self.paneles_analogicos[nombre].config(
+                            text=f"{self.paneles_analogicos[nombre].cget('text').split(':')[0]}: {data[nombre]}"
+                        )
 
     def _ciclo_actualizacion_leds(self):
         self._actualizar_salidas()
