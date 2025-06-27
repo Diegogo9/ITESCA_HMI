@@ -10,8 +10,8 @@ except:
 NUM_OUTPUTS = 4
 DIGITAL_OUTS = 4
 
-BUTTONS_OUTPUTS_ON_X_PLACE = 100
-BUTTONS_OUTPUTS_OFF_X_PLACE = 250
+BUTTONS_OUTPUTS_ON_X_PLACE = 150
+BUTTONS_OUTPUTS_OFF_X_PLACE = 300
 LEDINPUTS_X_POSITION = 600
 LABELINPUTS_X_PLACE = 30
 GLOBAL_FONT = ("Arial", 10)
@@ -58,10 +58,17 @@ class HMIApp(Tk):
         self.protocol("WM_DELETE_WINDOW", self._cerrar_aplicacion)
 
         self.paneles_analogicos = {}
-        self._crear_paneles_analogicos({
-            "A0": (400, 50), #Nombre y ubicacion de los paneles
-            "A1": (400, 100),
-        })
+        self._crear_paneles_analogicos({"A0": (450, 50), #Nombre y ubicacion de los paneles
+                                        "A1": (450, 100)})
+    
+    # MARK: Cierre de ventana
+    def _cerrar_aplicacion(self):
+        try:
+            self._desconectar()
+            self.destroy()
+        except:
+            self.destroy()
+            exit()
 
     # MARK: Botones y LEDs 
     def _crear_entradas(self):
@@ -72,7 +79,7 @@ class HMIApp(Tk):
         for i in range(NUM_OUTPUTS):
             y = 50 + i * 50
 
-            Label(self, text=f"Input {i}", font=GLOBAL_FONT,
+            Label(self, text=f"OUTPUTS {i}", font=GLOBAL_FONT,
                                            bg="#edb51a", 
                                            padx=5).place(x=LABELINPUTS_X_PLACE, y=y)
 
@@ -150,6 +157,7 @@ class HMIApp(Tk):
             self.buttons_off[i]["state"] = DISABLED
         self._enviar_estado()
 
+    # MARK: Panel Analogo
     def _crear_paneles_analogicos(self, paneles_info: dict[str, tuple[int, int]]):
         """
         Crea múltiples paneles analógicos de forma homogénea.
@@ -262,19 +270,12 @@ class HMIApp(Tk):
                 # Actualizar paneles analógicos si existen
                 for nombre in ["A0", "A1"]:
                     if nombre in data and nombre in self.paneles_analogicos:
-                        self.paneles_analogicos[nombre].config(text=f"{nombre}: {data[nombre]}")
+                        self.paneles_analogicos[nombre].config(text= 
+                                                        f"{nombre}: {data[nombre]}")
 
     def _ciclo_actualizacion_leds(self):
         self._actualizar_salidas()
         self.after(50, self._ciclo_actualizacion_leds)
-
-    def _cerrar_aplicacion(self):
-        try:
-            self._desconectar()
-            self.destroy()
-        except:
-            self.destroy()
-            exit()
 
 if __name__ == "__main__":
     print('Codigo escrito por: Diego Ramos - 20130235.')
