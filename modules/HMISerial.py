@@ -51,7 +51,6 @@ class HMIApp(Tk):
         self._crear_toolbox()
         self._crear_paneles_analogicos({"A0": ("A0", (450, 50)),
                                         "A1": ("A1", (450, 100))})
-
         # Inicialización
         self._set_estado_controles(False)
         self._actualizar_puertos()
@@ -263,8 +262,7 @@ class HMIApp(Tk):
                 for nombre in ["A0", "A1"]:
                     if nombre in data and nombre in self.paneles_analogicos:
                         self.paneles_analogicos[nombre].config(
-                            text=f"{self.paneles_analogicos[nombre].cget('text').split(':')[0]}: {data[nombre]}"
-                        )
+                            text= f"{self.paneles_analogicos[nombre].cget('text').split(':')[0]}: {data[nombre]}")
 
     def _ciclo_actualizacion_leds(self):
         self._actualizar_salidas()
