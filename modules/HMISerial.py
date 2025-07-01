@@ -186,8 +186,8 @@ class HMIApp(Tk):
         self.btn_actualizar.pack(side=LEFT, padx=5)
 
         self.btn_desconectar = Button(frame, text="Desconectar", 
-                                             command=self._desconectar, 
-                                             state=DISABLED)
+                                                command=self._desconectar, 
+                                                state=DISABLED)
         self.btn_desconectar.pack(side=RIGHT, padx=5)
 
         self.btn_conectar = Button(frame, text="Conectar", command=self._conectar)
