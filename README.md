@@ -5,9 +5,9 @@ Sistema de Interfaz Humano Maquina usando python Tkinter
 
 
 Probado en micropython con:  
-- Raspberry pi pico (RP2040)
-- Esp-WROOM-32 
-- Esp32s2 
+- Raspberry Pi Pico (RP2040)
+- ESP-WROOM-32 
+- ESP32S2 
 
 Implementando :
 - 4 Entradas Digitales
